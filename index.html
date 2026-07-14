@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Genesis: Village Zero</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header id="hud">
+    <div class="hud-left">
+      <strong>Project Genesis: Village Zero</strong>
+      <span id="hud-date">—</span>
+      <span id="hud-time">—</span>
+      <span id="hud-weather">—</span>
+    </div>
+    <div class="hud-right">
+      <label>Seed <input id="seed-input" type="text" size="8" /></label>
+      <button id="btn-new">New World</button>
+      <button id="btn-pause">Pause</button>
+      <select id="speed-select">
+        <option value="1">1x</option>
+        <option value="4">4x</option>
+        <option value="20">20x</option>
+        <option value="60">60x (1hr/s)</option>
+      </select>
+      <button id="btn-save">Save</button>
+      <button id="btn-export">Export .json</button>
+      <label class="filebtn">Import<input id="import-input" type="file" accept="application/json" /></label>
+    </div>
+  </header>
+
+  <main id="layout">
+    <section id="stage">
+      <canvas id="village-canvas"></canvas>
+      <p class="hint">Move: WASD / Arrow keys. Click an NPC to inspect them.</p>
+    </section>
+
+    <aside id="sidebar">
+      <nav id="tabs">
+        <button class="tab active" data-tab="inspector">Inspector</button>
+        <button class="tab" data-tab="interact">Interact</button>
+        <button class="tab" data-tab="timeline">Timeline</button>
+        <button class="tab" data-tab="settings">Settings</button>
+      </nav>
+      <div id="panel-inspector" class="panel active"></div>
+      <div id="panel-interact" class="panel"></div>
+      <div id="panel-timeline" class="panel"></div>
+      <div id="panel-settings" class="panel">
+        <h3>Dialogue Renderer</h3>
+        <label><input type="checkbox" id="ollama-toggle" /> Use local Ollama for flavor text</label>
+        <p class="muted" id="ollama-status">Off by default. The game is fully playable without it.</p>
+        <p class="muted">Requires Ollama running locally at localhost:11434. Never required, never costs anything.</p>
+      </div>
+    </aside>
+  </main>
+
+  <div id="catchup-modal" class="modal hidden">
+    <div class="modal-box">
+      <h3>Welcome back</h3>
+      <p id="catchup-text"></p>
+      <button id="catchup-yes">Simulate elapsed time</button>
+      <button id="catchup-no">Skip ahead instantly</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
