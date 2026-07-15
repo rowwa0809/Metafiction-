@@ -63,7 +63,6 @@ button:hover { background: var(--earth-1); }
   align-items: center;
 }
 #village-canvas {
-  image-rendering: pixelated;
   border: 1px solid var(--border);
   max-width: 100%;
   background: #000;

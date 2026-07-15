@@ -78,13 +78,29 @@ src/
                 npc.js (per-NPC tick: the orchestration glue)
   player/       the player is a normal row in world.npcs (isPlayer: true)
                 that runs through the exact same pipelines as any NPC
-  render/       Canvas 2D rendering: terrain, buildings, day/night
-                lighting, weather
+  render/       Real-time 3D presentation (Three.js/WebGL): terrain,
+                buildings, day/night lighting, shadows, weather
+  vendor/       Vendored third-party code (see note below)
   ui/           debug inspector, world timeline panel, interaction menu
   main.js       wires the DOM to the simulation
 test/
   run-sim.mjs   headless (no DOM) deterministic acceptance-test harness
 ```
+
+### A deliberate exception: Three.js for rendering
+
+Every constraint above (zero servers, zero accounts, zero build step) is
+still true. One thing changed from the original "vanilla, Canvas 2D only"
+plan: the presentation layer (`src/render/scene3d.js`) uses
+[Three.js](https://threejs.org) for real WebGL 3D rendering — real
+per-pixel lighting/shadows, fog, and a day/night sky, which isn't
+practical to hand-roll in raw WebGL in a reasonable amount of time. This
+was an explicit, deliberate call (not a silent scope-creep): the library
+is vendored directly into `src/vendor/three/` (MIT-licensed, no CDN
+dependency, no network access needed at runtime) rather than pulled from
+a live CDN, so the project stays fully self-contained and offline-capable.
+No other module in the codebase — simulation, cognition, economy,
+society, dialogue — depends on it or on anything outside plain JavaScript.
 
 ### The cognitive pipeline, in one sentence per module
 
