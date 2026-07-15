@@ -4,7 +4,7 @@
 import { createWorld, serializeWorld, deserializeWorld } from './core/worldState.js';
 import { saveToIndexedDB, loadFromIndexedDB, exportWorldToFile, importWorldFromFile } from './core/save.js';
 import { tickWorld, catchUpSimulation } from './sim/simulation.js';
-import { renderFrame, canvasSize } from './render/renderer.js';
+import { renderFrame, canvasSize, TILE } from './render/renderer.js';
 import { renderInspector } from './ui/inspector.js';
 import { renderTimeline } from './ui/timeline.js';
 import { renderInteractionMenu } from './ui/interactionMenu.js';
@@ -148,8 +148,8 @@ canvas.addEventListener('click', (e) => {
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
-  const tx = Math.floor(((e.clientX - rect.left) * scaleX) / 15);
-  const ty = Math.floor(((e.clientY - rect.top) * scaleY) / 15);
+  const tx = Math.floor(((e.clientX - rect.left) * scaleX) / TILE);
+  const ty = Math.floor(((e.clientY - rect.top) * scaleY) / TILE);
   let closest = null;
   let closestDist = Infinity;
   for (const npc of Object.values(world.npcs)) {

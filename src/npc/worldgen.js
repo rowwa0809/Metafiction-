@@ -54,6 +54,7 @@ function makePerson(world, rng, { surname, age, sex, homeBuildingId }) {
     homeBuildingId,
     workBuildingId: null,
     position: { x: 0, y: 0 },
+    facing: { dx: 0, dy: 1 },
     indoors: true,
     needs: initNeedsSeeded(childRng),
     emotion: initEmotion(),

@@ -33,7 +33,7 @@ export function createPlayer(world, rng, name = 'Traveler') {
     fear: 'being forgotten by history', dream: 'finding a place to belong',
     family: { parents: [], siblings: [], spouse: null, children: [] },
     homeBuildingId: hall.id, workBuildingId: hall.id,
-    position: { x: hall.door.x, y: hall.door.y }, indoors: false,
+    position: { x: hall.door.x, y: hall.door.y }, facing: { dx: 0, dy: 1 }, indoors: false,
     needs: initNeedsSeeded(rng.child('player_needs')),
     emotion: initEmotion(),
     memoryIds: [], beliefIds: [],
@@ -52,6 +52,7 @@ export function movePlayer(world, dx, dy) {
   const ny = player.position.y + dy;
   if (!isWalkable(world.map, nx, ny)) return false;
   player.position = { x: nx, y: ny };
+  player.facing = { dx: Math.sign(dx), dy: Math.sign(dy) };
   player.indoors = false;
   return true;
 }
