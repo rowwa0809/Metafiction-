@@ -4,7 +4,7 @@
 import { createWorld, serializeWorld, deserializeWorld } from './core/worldState.js';
 import { saveToIndexedDB, loadFromIndexedDB, exportWorldToFile, importWorldFromFile } from './core/save.js';
 import { tickWorld, catchUpSimulation } from './sim/simulation.js';
-import { renderFrame, canvasSize, TILE } from './render/renderer.js';
+import { createScene3D, updateScene3D, pickNpcAt } from './render/scene3d.js';
 import { renderInspector } from './ui/inspector.js';
 import { renderTimeline } from './ui/timeline.js';
 import { renderInteractionMenu } from './ui/interactionMenu.js';
@@ -12,8 +12,11 @@ import { movePlayer } from './player/player.js';
 import { OllamaDialogueRenderer, checkOllamaAvailable } from './dialogue/ollamaRenderer.js';
 import { RNG } from './core/rng.js';
 
+const RENDER_WIDTH = 1040;
+const RENDER_HEIGHT = 760;
+
 const canvas = document.getElementById('village-canvas');
-const ctx = canvas.getContext('2d');
+let scene3d = null;
 
 let world = null;
 let selectedNpcId = null;
@@ -43,10 +46,12 @@ const els = {
   catchupNo: document.getElementById('catchup-no'),
 };
 
-function setupCanvas() {
-  const { width, height } = canvasSize(world);
-  canvas.width = width;
-  canvas.height = height;
+function setupScene() {
+  if (scene3d) scene3d.renderer.dispose(); // free the old WebGL context before building a new one
+  canvas.width = RENDER_WIDTH;
+  canvas.height = RENDER_HEIGHT;
+  scene3d = createScene3D(canvas, world, RENDER_WIDTH, RENDER_HEIGHT);
+  window.__genesisScene3D = scene3d; // debug introspection, mirrors window.__genesisWorld
 }
 
 function randomSeed() {
@@ -59,7 +64,7 @@ async function boot() {
     world = deserializeWorld(saved);
     window.__genesisWorld = world;
     els.seedInput.value = world.seed;
-    setupCanvas();
+    setupScene();
     maybeOfferCatchUp(saved.savedAtRealTime);
   } else {
     startNewWorld(randomSeed());
@@ -73,7 +78,7 @@ async function boot() {
 function startNewWorld(seed) {
   world = createWorld(seed);
   els.seedInput.value = seed;
-  setupCanvas();
+  setupScene();
   selectedNpcId = null;
   window.__genesisWorld = world; // exposed for console/debug introspection, matches the inspector's "prove it's alive" ethos
 }
@@ -107,7 +112,7 @@ function updateHud() {
 }
 
 function renderLoop() {
-  if (world) renderFrame(ctx, world, { selectedNpcId });
+  if (world && scene3d) updateScene3D(scene3d, world, selectedNpcId);
   requestAnimationFrame(renderLoop);
 }
 
@@ -144,20 +149,12 @@ window.addEventListener('keydown', (e) => {
 });
 
 canvas.addEventListener('click', (e) => {
-  if (!world) return;
+  if (!world || !scene3d) return;
   const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const tx = Math.floor(((e.clientX - rect.left) * scaleX) / TILE);
-  const ty = Math.floor(((e.clientY - rect.top) * scaleY) / TILE);
-  let closest = null;
-  let closestDist = Infinity;
-  for (const npc of Object.values(world.npcs)) {
-    if (!npc.alive || npc.indoors) continue;
-    const d = Math.hypot(npc.position.x - tx, npc.position.y - ty);
-    if (d < closestDist) { closestDist = d; closest = npc; }
-  }
-  if (closest && closestDist <= 2) selectedNpcId = closest.id;
+  const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  const hitId = pickNpcAt(scene3d, world, ndcX, ndcY);
+  if (hitId) selectedNpcId = hitId;
 });
 
 // --- Toolbar ---------------------------------------------------------------
@@ -186,7 +183,7 @@ els.importInput.addEventListener('change', async (e) => {
   world = deserializeWorld(data);
   window.__genesisWorld = world;
   els.seedInput.value = world.seed;
-  setupCanvas();
+  setupScene();
 });
 
 document.querySelectorAll('.tab').forEach((tab) => {
