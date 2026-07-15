@@ -73,7 +73,11 @@ function reconsiderGoal(world, npc, rng) {
 function moveAlongPath(npc) {
   if (!npc.goals.path || npc.goals.path.length === 0) return false;
   npc.indoors = false;
-  npc.position = npc.goals.path.shift();
+  const next = npc.goals.path.shift();
+  const dx = Math.sign(next.x - npc.position.x);
+  const dy = Math.sign(next.y - npc.position.y);
+  if (dx !== 0 || dy !== 0) npc.facing = { dx, dy };
+  npc.position = next;
   return true;
 }
 
